@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+    
+        <com.markupartist.android.widget.ActionBar
+        android:id="@+id/actionbar"
+        style="@style/ActionBar"
+        />
+       <LinearLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="1"
+    android:background="#f8f9fe" >
+
+
+                    
+                <ListView android:id="@android:id/list" 
+                      android:layout_width="fill_parent" 
+                      android:layout_height="wrap_content"                     
+                      android:layout_below="@+id/textView1"
+                      />
+</LinearLayout>
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/FooterBar" >
+    <TextView android:text="www.medicalplaces.ug"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#606060"
+            android:gravity="center"
+            android:paddingTop="10dip"/>
+</LinearLayout>
+            </LinearLayout>

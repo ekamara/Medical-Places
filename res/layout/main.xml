@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+    <com.markupartist.android.widget.ActionBar
+        android:id="@+id/actionbar"
+        style="@style/ActionBar"
+        />
+    <ug.medicalplaces.android.layouts.DashboardLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_weight="1"
+    android:background="#f8f9fe" >
+    <!--  Browse list Button -->
+    <Button
+        android:id="@+id/btn_browse_places"
+        style="@style/DashboardButton"
+        android:drawableTop="@drawable/dashboard_button_add"
+        android:text="Browse Places" />
+ 
+    <!--  Places near me -->
+    <Button
+        android:id="@+id/btn_near_me"
+        style="@style/DashboardButton"
+        android:drawableTop="@drawable/dashboard_button_add"
+        android:text="Places near me" />
+ 
+    <!--  All places -->
+    <Button
+        android:id="@+id/btn_view_all"
+        style="@style/DashboardButton"
+        android:drawableTop="@drawable/dashboard_button_add"
+        android:text="Places on map" />
+ 
+    <!--  Places by insurance -->
+    <Button
+        android:id="@+id/btn_insurance_providers"
+        style="@style/DashboardButton"
+        android:drawableTop="@drawable/dashboard_button_add"
+        android:text="Insurance Providers" /> 
+
+</ug.medicalplaces.android.layouts.DashboardLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/FooterBar" >
+    <TextView android:text="www.medicalplaces.ug"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#606060"
+            android:gravity="center"
+            android:paddingTop="10dip"/>
+</LinearLayout>
+  
+</LinearLayout>
