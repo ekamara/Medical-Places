@@ -4,57 +4,61 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ug.medicalplaces.android.R;
-import android.app.ListActivity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
+//import ug.medicalplaces.android.activities.InsuranceProvidersActivity.OptionsAdapter;
 
 import com.markupartist.android.widget.ActionBar;
 import com.markupartist.android.widget.ActionBar.IntentAction;
 
-public class InsuranceProvidersActivity extends ListActivity {
-	List<String> options;
+import android.app.Activity;
+import android.app.ListActivity;
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+public class CategoriesActivity extends ListActivity {
+	
+	private String selectedProvider;
+	private List<String> options;
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.insurance_providers);
+		setContentView(R.layout.categories);
 		
 		ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
 		actionBar.setTitle("Insurance Providers");
 		actionBar.setHomeAction(new IntentAction(this, MainActivity.createIntent(this), R.drawable.ic_menu_home));
 		actionBar.setDisplayHomeAsUpEnabled(true);
 		
+		selectedProvider = getIntent().getStringExtra("selectedProvider");
+		
 		  options = new ArrayList<String>();
-	        options.add("Jubilee Insurance");
-	        options.add("AAR");  
-	        options.add("IAA");
-	        options.add("Bupa");
+	        options.add("Dentist");
+	        options.add("ENT");  
+	        options.add("General");
 
 	        setListAdapter(new OptionsAdapter());
 	}
 	
     protected void onListItemClick(ListView l, View v, int position, long id) {
     	String selectedOption = options.get(position).toString();
-    	Intent intent = new Intent(this, CategoriesActivity.class);
-    	if (selectedOption.equalsIgnoreCase("selling")) {
-    		intent.putExtra("selectedProvider", "selling");
-    	} else if (selectedOption.equalsIgnoreCase("buying")) {
-    		intent.putExtra("selectedProvider", "buying");
+    	Intent intent = new Intent(this, ListPlacesActivity.class);
+    	if (selectedOption.equalsIgnoreCase("dentist")) {
+    		intent.putExtra("selectedCategory", "dentist");
+    	} else if (selectedOption.equalsIgnoreCase("ent")) {
+    		intent.putExtra("selectedCategory", "ent");
     	}
 		startActivity(intent);
     }
-	
-	
+
 	  private class OptionsAdapter extends ArrayAdapter<String> {
 	    	OptionsAdapter() {
-	    		super(InsuranceProvidersActivity.this, R.layout.options_list, R.id.select_option, options);
+	    		super(CategoriesActivity.this, R.layout.options_list, R.id.select_option, options);
 	    	}
 	    	
 	    	@Override
@@ -68,5 +72,4 @@ public class InsuranceProvidersActivity extends ListActivity {
 				return row;
 	    	}
 	    }
-
 }

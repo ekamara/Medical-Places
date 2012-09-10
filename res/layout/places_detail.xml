@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+                <com.markupartist.android.widget.ActionBar
+        android:id="@+id/actionbar"
+        style="@style/ActionBar"
+        />
+    <TabHost android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/tabHost"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    >
+
+    <TabWidget
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@android:id/tabs"
+    />
+     <FrameLayout
+     android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@android:id/tabcontent"
+     >
+     <LinearLayout
+     android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/tab1"
+    android:orientation="vertical"
+    android:paddingTop="60px"
+     >
+     <TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="100px" 
+    android:text=""
+    android:id="@+id/txt1"
+    />    
+    
+     </LinearLayout>
+     
+     <LinearLayout
+     android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/tab2"
+    android:orientation="vertical"
+    android:paddingTop="60px"
+     >
+     <TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="100px" 
+    android:text=""
+    android:id="@+id/txt2"
+    />
+   
+     </LinearLayout>
+     
+      <LinearLayout
+     android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/tab3"
+    android:orientation="vertical"
+    android:paddingTop="60px"
+     >
+     <TextView  
+    android:layout_width="fill_parent" 
+    android:layout_height="100px" 
+    android:text="This is tab 3"
+    android:id="@+id/txt3"
+    />
+   
+     </LinearLayout>
+     </FrameLayout>
+    
+    </TabHost>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    style="@style/FooterBar" >
+    <TextView android:text="www.medicalplaces.ug"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#606060"
+            android:gravity="center"
+            android:paddingTop="10dip"/>
+</LinearLayout>
+    </LinearLayout>

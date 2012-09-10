@@ -4,34 +4,32 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import ug.medicalplaces.android.R;
-import ug.medicalplaces.android.activities.MainActivity.LoadPlaces;
 import ug.medicalplaces.android.utilities.AlertDialogManager;
 import ug.medicalplaces.android.utilities.ConnectionDetector;
 import ug.medicalplaces.android.utilities.GPSTracker;
 import ug.medicalplaces.android.utilities.GooglePlaces;
 import ug.medicalplaces.android.utilities.Place;
 import ug.medicalplaces.android.utilities.PlacesList;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.SimpleAdapter;
 
-import com.markupartist.android.widget.ActionBar;
-import com.markupartist.android.widget.ActionBar.Action;
-import com.markupartist.android.widget.ActionBar.IntentAction;
+public class PlacesNearMeActivity extends Activity {
 
-public class MainActivity extends Activity {
-	
 	Boolean isInternetPresent = false;
 	
 	ConnectionDetector cd;
@@ -47,73 +45,84 @@ public class MainActivity extends Activity {
 	public static String KEY_REFERENCE = "reference";
 	public static String KEY_NAME = "name";
 	public static String KEY_VICINITY = "vicinity";
-    
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        
-        final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
-        actionBar.setTitle("Medical Places");
-        
-        final Action shareAction = new IntentAction(this, createSearchIntent(), R.drawable.ic_search);
-        actionBar.addAction(shareAction);
-        
-        DashboardClickListener dbClickListener = new DashboardClickListener();
-        findViewById(R.id.btn_browse_places).setOnClickListener(dbClickListener);
-        findViewById(R.id.btn_near_me).setOnClickListener(dbClickListener);
-        findViewById(R.id.btn_view_all).setOnClickListener(dbClickListener);
-        findViewById(R.id.btn_insurance_providers).setOnClickListener(dbClickListener);
-        
-    }
-
-	private Intent createSearchIntent() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
-    public static Intent createIntent(Context context) {
-        Intent i = new Intent(context, MainActivity.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        return i;
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		
+		cd = new ConnectionDetector(getApplicationContext());
+		
+		isInternetPresent = cd.isConnectingToInternet();
+		if(!isInternetPresent) {
+			alert.showAlertDialog(PlacesNearMeActivity.this, "Internet Connection Error", "Please connect to working internet connection", false);
+			return;
+		}
+		
+		gps = new GPSTracker(this);
+		if(gps.canGetLocation()) {
+			Log.d("Your Location", "latitude:" + gps.getLatitude() + ", longitude: " + gps.getLongitude());
+		} else {
+	          alert.showAlertDialog(PlacesNearMeActivity.this, "GPS Status",
+	                    "Couldn't get location information. Please enable GPS",
+	                    false);
+	          return;
+		}
+		
+		// Getting listview
+        lv = (ListView) findViewById(R.id.list);
+ 
+        // button show on map
+        btnShowOnMap = (Button) findViewById(R.id.btn_show_map);
+ 
+        // calling background Async task to load Google Places
+        // After getting places from Google all the data is shown in listview
+        new LoadPlaces().execute();
+ 
+        /** Button click event for shown on map */
+        btnShowOnMap.setOnClickListener(new View.OnClickListener() {
+ 
+            @Override
+            public void onClick(View arg0) {
+                Intent i = new Intent(getApplicationContext(),
+                        PlacesMapActivity.class);
+                // Sending user current geo location
+               // i.putExtra("user_latitude", Double.toString(gps.getLatitude()));
+               // i.putExtra("user_longitude", Double.toString(gps.getLongitude()));
+                i.putExtra("user_latitude", Double.toString(37.46));
+                i.putExtra("user_longitude", Double.toString(-122.26));
+                // passing near places to map activity
+                i.putExtra("near_places", nearPlaces);
+                // staring activity
+                startActivity(i);
+            }
+        });
+ 
+        /**
+         * ListItem click event
+         * On selecting a listitem SinglePlaceActivity is launched
+         * */
+        lv.setOnItemClickListener(new OnItemClickListener() {
+ 
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view,
+                    int position, long id) {
+                // getting values from selected ListItem
+                String reference = ((TextView) view.findViewById(R.id.reference)).getText().toString();
+ 
+                // Starting new intent
+                Intent in = new Intent(getApplicationContext(),
+                        SinglePlaceActivity.class);
+ 
+                // Sending place refrence id to single place activity
+                // place refrence id used to get "Place full details"
+                in.putExtra(KEY_REFERENCE, reference);
+                startActivity(in);
+            }
+        });
     }
-	private class DashboardClickListener implements OnClickListener {
-	    @Override
-	    public void onClick(View v) {
-	        Intent i = null;
-	        switch (v.getId()) {
-	            case R.id.btn_browse_places:
-	                //i = new Intent(DashboardActivity.this, AddCapture.class);
-	                break;
-	            case R.id.btn_near_me:
-	                //i = new Intent(DashboardActivity.this, ViewAll.class);
-	            	i = new Intent(MainActivity.this, MainActivity.class);
-	                break;
-	            case R.id.btn_view_all:
-	            	new LoadPlaces().execute();
-	                //i = new Intent(DashboardActivity.this, Manage.class);
-	            	i = new Intent(getApplicationContext(), PlacesMapActivity.class);
-	                 // Sending user current geo location
-	                // i.putExtra("user_latitude", Double.toString(gps.getLatitude()));
-	                // i.putExtra("user_longitude", Double.toString(gps.getLongitude()));
-	                 i.putExtra("user_latitude", Double.toString(37.46));
-	                 i.putExtra("user_longitude", Double.toString(-122.26));
-	                 // passing near places to map activity
-	                 i.putExtra("near_places", nearPlaces);
-	                break;
-	            case R.id.btn_insurance_providers:
-	                i = new Intent(MainActivity.this, InsuranceProvidersActivity.class);
-	                break;
-	            default:
-	                break;
-	        }
-	        if(i != null) {
-	            startActivity(i);
-	        }
-	    }
-	}
-	
-	 /**
+ 
+    /**
      * Background Async Task to Load Google places
      * */
     class LoadPlaces extends AsyncTask<String, String, String> {
@@ -124,7 +133,7 @@ public class MainActivity extends Activity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog = new ProgressDialog(PlacesNearMeActivity.this);
             pDialog.setMessage(Html.fromHtml("<b>Search</b><br/>Loading Places..."));
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
@@ -190,13 +199,12 @@ public class MainActivity extends Activity {
  
                                 // Place name
                                 map.put(KEY_NAME, p.name);
-                                Log.d("Place name", p.name);
  
                                 // adding HashMap to ArrayList
                                 placesListItems.add(map);
                             }
                             // list adapter
-                            ListAdapter adapter = new SimpleAdapter(MainActivity.this, placesListItems,
+                            ListAdapter adapter = new SimpleAdapter(PlacesNearMeActivity.this, placesListItems,
                                     R.layout.list_item,
                                     new String[] { KEY_REFERENCE, KEY_NAME}, new int[] {
                                             R.id.reference, R.id.name });
@@ -207,37 +215,37 @@ public class MainActivity extends Activity {
                     }
                     else if(status.equals("ZERO_RESULTS")){
                         // Zero results found
-                        alert.showAlertDialog(MainActivity.this, "Near Places",
+                        alert.showAlertDialog(PlacesNearMeActivity.this, "Near Places",
                                 "Sorry no places found. Try to change the types of places",
                                 false);
                     }
                     else if(status.equals("UNKNOWN_ERROR"))
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(PlacesNearMeActivity.this, "Places Error",
                                 "Sorry unknown error occured.",
                                 false);
                     }
                     else if(status.equals("OVER_QUERY_LIMIT"))
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(PlacesNearMeActivity.this, "Places Error",
                                 "Sorry query limit to google places is reached",
                                 false);
                     }
                     else if(status.equals("REQUEST_DENIED"))
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(PlacesNearMeActivity.this, "Places Error",
                                 "Sorry error occured. Request is denied",
                                 false);
                     }
                     else if(status.equals("INVALID_REQUEST"))
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(PlacesNearMeActivity.this, "Places Error",
                                 "Sorry error occured. Invalid Request",
                                 false);
                     }
                     else
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(PlacesNearMeActivity.this, "Places Error",
                                 "Sorry error occured.",
                                 false);
                     }
@@ -247,4 +255,10 @@ public class MainActivity extends Activity {
         }
  
     }
+ /*
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_main, menu);
+        return true;
+    }*/
 }
