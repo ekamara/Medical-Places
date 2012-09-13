@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import ug.medicalplaces.android.R;
-import ug.medicalplaces.android.activities.ViewAllActivity.LoadPlaces;
 import ug.medicalplaces.android.utilities.AlertDialogManager;
 import ug.medicalplaces.android.utilities.ConnectionDetector;
 import ug.medicalplaces.android.utilities.GPSTracker;
@@ -13,25 +12,22 @@ import ug.medicalplaces.android.utilities.Place;
 import ug.medicalplaces.android.utilities.PlacesList;
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
+import android.widget.AdapterView.OnItemClickListener;
 
-import com.markupartist.android.widget.ActionBar;
-import com.markupartist.android.widget.ActionBar.Action;
-import com.markupartist.android.widget.ActionBar.IntentAction;
+public class ViewAllActivity extends Activity {
 
-public class MainActivity extends Activity {
-	
 	Boolean isInternetPresent = false;
 	
 	ConnectionDetector cd;
@@ -47,85 +43,37 @@ public class MainActivity extends Activity {
 	public static String KEY_REFERENCE = "reference";
 	public static String KEY_NAME = "name";
 	public static String KEY_VICINITY = "vicinity";
-    
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.main);
-        
-        final ActionBar actionBar = (ActionBar) findViewById(R.id.actionbar);
-        actionBar.setTitle("Medical Places");
-        
-        final Action shareAction = new IntentAction(this, createSearchIntent(), R.drawable.ic_search);
-        actionBar.addAction(shareAction);
-        
-        DashboardClickListener dbClickListener = new DashboardClickListener();
-        findViewById(R.id.btn_browse_places).setOnClickListener(dbClickListener);
-        findViewById(R.id.btn_near_me).setOnClickListener(dbClickListener);
-        findViewById(R.id.btn_view_all).setOnClickListener(dbClickListener);
-        findViewById(R.id.btn_insurance_providers).setOnClickListener(dbClickListener);
-        
-    }
-
-	private Intent createSearchIntent() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	
-    public static Intent createIntent(Context context) {
-        Intent i = new Intent(context, MainActivity.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        return i;
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		
+		cd = new ConnectionDetector(getApplicationContext());
+		
+		isInternetPresent = cd.isConnectingToInternet();
+		if(!isInternetPresent) {
+			alert.showAlertDialog(ViewAllActivity.this, "Internet Connection Error", "Please connect to working internet connection", false);
+			return;
+		}
+		
+		gps = new GPSTracker(this);
+		if(gps.canGetLocation()) {
+			Log.d("Your Location", "latitude:" + gps.getLatitude() + ", longitude: " + gps.getLongitude());
+		} else {
+	          alert.showAlertDialog(ViewAllActivity.this, "GPS Status",
+	                    "Couldn't get location information. Please enable GPS",
+	                    false);
+	          return;
+		}
+ 
+        // calling background Async task to load Google Places
+        // After getting places from Google all the data is shown in listview
+        new LoadPlaces().execute();
+ 
     }
-	private class DashboardClickListener implements OnClickListener {
-	    @Override
-	    public void onClick(View v) {
-	        Intent i = null;
-	        switch (v.getId()) {
-	            case R.id.btn_browse_places:
-	                //i = new Intent(DashboardActivity.this, AddCapture.class);
-	                break;
-	            case R.id.btn_near_me:
-	                //i = new Intent(DashboardActivity.this, ViewAll.class);
-	            	i = new Intent(MainActivity.this, PlacesNearMeActivity.class);
-	                break;
-	            case R.id.btn_view_all:
-	                //i = new Intent(DashboardActivity.this, Manage.class);
-	        		cd = new ConnectionDetector(getApplicationContext());
-	        		
-	        		isInternetPresent = cd.isConnectingToInternet();
-	        		if(!isInternetPresent) {
-	        			alert.showAlertDialog(MainActivity.this, "Internet Connection Error", "Please connect to working internet connection", false);
-	        			return;
-	        		}
-	        		
-	        		gps = new GPSTracker(MainActivity.this);
-	        		if(gps.canGetLocation()) {
-	        			Log.d("Your Location", "latitude:" + gps.getLatitude() + ", longitude: " + gps.getLongitude());
-	        		} else {
-	        	          alert.showAlertDialog(MainActivity.this, "GPS Status",
-	        	                    "Couldn't get location information. Please enable GPS",
-	        	                    false);
-	        	          return;
-	        		}
-	         
-	                // calling background Async task to load Google Places
-	                // After getting places from Google all the data is shown in listview
-	                new LoadPlaces().execute();
-	                break;
-	            case R.id.btn_insurance_providers:
-	                i = new Intent(MainActivity.this, InsuranceProvidersActivity.class);
-	                break;
-	            default:
-	                break;
-	        }
-	        if(i != null) {
-	            startActivity(i);
-	        }
-	    }
-	}
-	
-	  /**
+ 
+    /**
      * Background Async Task to Load Google places
      * */
     class LoadPlaces extends AsyncTask<String, String, String> {
@@ -136,7 +84,7 @@ public class MainActivity extends Activity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            pDialog = new ProgressDialog(MainActivity.this);
+            pDialog = new ProgressDialog(ViewAllActivity.this);
             pDialog.setMessage(Html.fromHtml("<b>Search</b><br/>Loading Places..."));
             pDialog.setIndeterminate(false);
             pDialog.setCancelable(false);
@@ -223,37 +171,37 @@ public class MainActivity extends Activity {
                     }
                     else if(status.equals("ZERO_RESULTS")){
                         // Zero results found
-                        alert.showAlertDialog(MainActivity.this, "Near Places",
+                        alert.showAlertDialog(ViewAllActivity.this, "Near Places",
                                 "Sorry no places found. Try to change the types of places",
                                 false);
                     }
                     else if(status.equals("UNKNOWN_ERROR"))
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(ViewAllActivity.this, "Places Error",
                                 "Sorry unknown error occured.",
                                 false);
                     }
                     else if(status.equals("OVER_QUERY_LIMIT"))
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(ViewAllActivity.this, "Places Error",
                                 "Sorry query limit to google places is reached",
                                 false);
                     }
                     else if(status.equals("REQUEST_DENIED"))
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(ViewAllActivity.this, "Places Error",
                                 "Sorry error occured. Request is denied",
                                 false);
                     }
                     else if(status.equals("INVALID_REQUEST"))
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(ViewAllActivity.this, "Places Error",
                                 "Sorry error occured. Invalid Request",
                                 false);
                     }
                     else
                     {
-                        alert.showAlertDialog(MainActivity.this, "Places Error",
+                        alert.showAlertDialog(ViewAllActivity.this, "Places Error",
                                 "Sorry error occured.",
                                 false);
                     }
@@ -263,4 +211,11 @@ public class MainActivity extends Activity {
         }
  
     }
+ /*
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.activity_main, menu);
+        return true;
+    }*/
+
 }

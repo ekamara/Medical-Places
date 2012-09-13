@@ -48,6 +48,10 @@
                   android:label="@string/app_name"
                   android:theme="@android:style/Theme.NoTitleBar">
             </activity>
+                                                    <activity android:name=".activities.ViewAllActivity"
+                  android:label="@string/app_name"
+                  android:theme="@android:style/Theme.NoTitleBar">
+            </activity>
     </application>
 
 </manifest>
